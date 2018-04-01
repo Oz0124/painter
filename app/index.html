@@ -23,12 +23,21 @@
         <!-- endbuild -->
     </head>
     <body>
-        <div class="container">
-            <div class="page-header">
-                <h1>Painter Application</h1>
-            </div>
+        <nav class="top-nav">
+            <a class="sideMenuButton">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </a>
+            <a href="/" class="logo">
+                Painter
+            </a>
+        </nav>
+ 
+        <div class="main">
+            canvas
         </div>
-
+        
         <!-- build:js scripts/vendor.js -->
         <!-- bower:js -->
         <script src="/bower_components/jquery/dist/jquery.js"></script>
@@ -43,7 +52,8 @@
         <!-- endbuild -->
     
         <!-- build:js scripts/main.js -->
-        <script src="scripts/modules.js"></script>
+        <script src="scripts/PainterComponentModules.js"></script>
+        <script src="scripts/SideMenuComponent.js"></script>
         <script src="scripts/main.js"></script>
         <!-- endbuild -->
     </body>
