@@ -10,12 +10,12 @@ OO.Modules.SideMenuComponent = function(options, container) {
 	this.openNav = function() {
 		let width = d3.select('body').select('.side-nav .side-nav-container').style('width');
 		d3.select('body').select('.side-nav').style('width', '100%');
-		d3.select('body').select('.main').style('margin-left', width);
+		// d3.select('body').select('.main').style('margin-left', width);
 	};
 	 
 	this.closeNav = function() {
 	    d3.select('body').select('.side-nav').style('width', '0');
-	    d3.select('body').select('.main').style('margin-left', '0');
+	    // d3.select('body').select('.main').style('margin-left', '0');
 	};
 
 };
