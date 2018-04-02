@@ -2,7 +2,7 @@
 
 This is a javascript Painter Application.
 
-[Demo](https://oz0124-demo.pancakeapps.com/painter)
+[Demo](https://oz0124.github.io/painter/)
 
 
 ## Prerequisites
