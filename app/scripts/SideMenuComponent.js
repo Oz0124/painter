@@ -119,3 +119,5 @@ OO.Modules.SideMenuComponent.prototype._init = function (options, container) {
 			}
 		});
 };
+
+
