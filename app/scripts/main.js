@@ -24,10 +24,12 @@ $(document).ready(function() {
 		penWidth: penWidth[0]
 	};
 
+	OO.Data.pointArray = [];
+
 	// canvas component
 	painterComponent = new OO.Modules.PainterComponent({
 		selectItem: OO.Data.selectItem,
-		pointArray: []
+		pointArray: OO.Data.pointArray
 	}, main);
 
 	// sidemenu component
@@ -67,5 +69,16 @@ $(document).ready(function() {
 
 		sideMenuComponent.closeNav();
 	});
+
+	window.onbeforeunload = function (event) {
+
+		if (OO.Data.pointArray.length > 0) {
+		    event.returnValue = 'Are you sure you want to leave?';
+		}
+		else {
+			event.preventDefault();
+		}
+	    
+	};
 	
 });

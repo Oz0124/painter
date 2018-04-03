@@ -37,11 +37,12 @@ OO.Modules.PainterComponent.prototype._init = function (options, container) {
     let lastY = 0;
 
     //點的結構
-    let Point = function(x, y, color, width) {
+    let Point = function(x, y, color, width, type) {
         this.x = x;
         this.y = y;
         this.color = color;
         this.width = width;
+        this.pointType = type;
     };
 
 	//畫出筆跡
@@ -79,7 +80,7 @@ OO.Modules.PainterComponent.prototype._init = function (options, container) {
     };
 
     //處理mousemove與touchmove
-    let mouseMove = function(mouseX, mouseY, color, width) {
+    let mouseMove = function(mouseX, mouseY, color, width, type) {
 
         if ((nowState === 1) || (nowState === 2) || (nowState === 4)) {
             mouseUpFlag = 0;
@@ -88,13 +89,13 @@ OO.Modules.PainterComponent.prototype._init = function (options, container) {
                 //do nothing
             } 
             else {
-                paint(new Point(lastX, lastY, color, width), new Point(mouseX, mouseY, color, width));
+                paint(new Point(lastX, lastY, color, width, type), new Point(mouseX, mouseY, color, width, type));
 
                 //記錄落筆點
                 if ((nowState === 1) || (nowState === 4)) {
-                    options.pointArray.push(new Point(lastX, lastY, color, width));
+                    options.pointArray.push(new Point(lastX, lastY, color, width, type));
                 }
-                options.pointArray.push(new Point(mouseX, mouseY, color, width));
+                options.pointArray.push(new Point(mouseX, mouseY, color, width, type));
 
                 lastX = mouseX;
                 lastY = mouseY;
@@ -106,18 +107,18 @@ OO.Modules.PainterComponent.prototype._init = function (options, container) {
     };
 
     //處理mouseup與touchend
-    let mouseUp = function(mouseX, mouseY, color, width) {
+    let mouseUp = function(mouseX, mouseY, color, width, type) {
 
         if ((nowState === 2) || (nowState === 4)) {
             if ((mouseX === lastX) && (mouseY === lastY)) {
                 //do nothing
             } 
             else {
-                options.pointArray.push(new Point(mouseX, mouseY, color, width));
+                options.pointArray.push(new Point(mouseX, mouseY, color, width, type));
 
-                paint(new Point(lastX, lastY, color, width), new Point(mouseX, mouseY, color, width));
+                paint(new Point(lastX, lastY, color, width, type), new Point(mouseX, mouseY, color, width, type));
             }
-            options.pointArray.push(new Point(-1, -1, color, width));
+            options.pointArray.push(new Point(-1, -1, color, width, type));
 
             lastX = mouseX;
             lastY = mouseY;
@@ -138,7 +139,7 @@ OO.Modules.PainterComponent.prototype._init = function (options, container) {
 
         //只有mousemove的情形要將筆跡終止
         if (nowState === 2) {
-            options.pointArray.push(new Point(-1, -1, null, null));
+            options.pointArray.push(new Point(-1, -1, null, null, null));
             mouseUpFlag = 1;
             nowState = 3;    
         }
@@ -162,7 +163,7 @@ OO.Modules.PainterComponent.prototype._init = function (options, container) {
         painterContext.fillStyle = '#ffffff';
 		painterContext.fillRect(0, 0, painterCanvas.node().width, painterCanvas.node().height);
 
-        options.pointArray = [];
+        options.pointArray.length = 0;
     };
 
     //重新繪製
@@ -173,6 +174,7 @@ OO.Modules.PainterComponent.prototype._init = function (options, container) {
         let tmpCurrentY = -1;
         let tmoColor = null;
         let tmpWidth = null;
+        let tmpType = null;
         let i = 0;
         let len = 0;
 
@@ -185,17 +187,18 @@ OO.Modules.PainterComponent.prototype._init = function (options, container) {
             tmpCurrentY = options.pointArray[i].y;
             tmoColor = options.pointArray[i].color;
             tmpWidth = options.pointArray[i].width;
+            tmpType = options.pointArray[i].pointType;
 
             if (tmpCurrentX >= 0) {
                 if (tmpLastX >= 0) {
-                    paint(new Point(tmpLastX, tmpLastY, tmoColor, tmpWidth), new Point(tmpCurrentX, tmpCurrentY, tmoColor, tmpWidth));
+                    paint(new Point(tmpLastX, tmpLastY, tmoColor, tmpWidth, tmpType), new Point(tmpCurrentX, tmpCurrentY, tmoColor, tmpWidth, tmpType));
                 } 
                 else {
-                    paint(new Point(tmpCurrentX, tmpCurrentY, tmoColor, tmpWidth), new Point(tmpCurrentX, tmpCurrentY, tmoColor, tmpWidth));
+                    paint(new Point(tmpCurrentX, tmpCurrentY, tmoColor, tmpWidth, tmpType), new Point(tmpCurrentX, tmpCurrentY, tmoColor, tmpWidth, tmpType));
                 }
             } 
             else if (tmpLastX >= 0) {
-                paint(new Point(tmpLastX, tmpLastY, tmoColor, tmpWidth), new Point(tmpLastX, tmpLastY, tmoColor, tmpWidth));
+                paint(new Point(tmpLastX, tmpLastY, tmoColor, tmpWidth, tmpType), new Point(tmpLastX, tmpLastY, tmoColor, tmpWidth, tmpType));
             }
 
             tmpLastX = tmpCurrentX;
@@ -224,10 +227,16 @@ OO.Modules.PainterComponent.prototype._init = function (options, container) {
             for (i = 0; i <= lastIndex; i++) {
                 tmpArray.push(options.pointArray[i]);
             }
-            options.pointArray = tmpArray;
+
+            options.pointArray.length = 0;
+            tmpArray.forEach(function (item) {
+                console.log(item);
+
+                options.pointArray.push(item);
+            });
         } 
         else {
-            options.pointArray = [];
+            options.pointArray.length = 0;
         }
 
         redraw();
@@ -235,11 +244,20 @@ OO.Modules.PainterComponent.prototype._init = function (options, container) {
 
     let saveCanvas =  function () {
     	let url = painterCanvas.node().toDataURL('image/jpeg');
+        let date = new Date();
 
+        let dateString = date.getFullYear() + '';
+        dateString += (date.getMonth() + 1) < 10 ? ('0' + (date.getMonth() + 1)) : (date.getMonth() + 1);
+        dateString += date.getDate() < 10 ? ('0' + date.getDate()) : date.getDate() + '-';
+        dateString += date.getHours() < 10 ? ('0' + date.getHours()) : date.getHours();
+        dateString += date.getMinutes() < 10 ? ('0' + date.getMinutes()) : date.getMinutes();
+        dateString += date.getSeconds() < 10 ? ('0' + date.getSeconds()) : date.getSeconds();     
+
+        download.attr('download', 'my-painter-' + dateString + '.jpg');
     	download.attr('href', url);
     	download.node().click();
 
-    	clearCanvas();
+    	redraw();
     };
 
 	//Binding Mouse Events
@@ -261,7 +279,7 @@ OO.Modules.PainterComponent.prototype._init = function (options, container) {
         let mouseX = d3.event.clientX - Math.round(rect.left);
         let mouseY = d3.event.clientY - Math.round(rect.top);
 
-        mouseMove(mouseX, mouseY, options.selectItem.penColor, options.selectItem.penWidth);
+        mouseMove(mouseX, mouseY, options.selectItem.penColor, options.selectItem.penWidth, OO.Common.ENUM.PointType.Point);
 	});
 	painterCanvas.on('mouseup', function() {
 		d3.event.preventDefault ? d3.event.preventDefault() : (d3.event.returnValue = false);
@@ -270,7 +288,7 @@ OO.Modules.PainterComponent.prototype._init = function (options, container) {
 		let mouseX = d3.event.clientX - Math.round(rect.left);
 		let mouseY = d3.event.clientY - Math.round(rect.top);
 
-		mouseUp(mouseX, mouseY, options.selectItem.penColor, options.selectItem.penWidth);
+		mouseUp(mouseX, mouseY, options.selectItem.penColor, options.selectItem.penWidth, OO.Common.ENUM.PointType.Point);
 	});
 	painterCanvas.on('mouseleave', function() {
 		d3.event.preventDefault ? d3.event.preventDefault() : (d3.event.returnValue = false);
@@ -297,8 +315,8 @@ OO.Modules.PainterComponent.prototype._init = function (options, container) {
         let mouseX = touch.clientX - Math.round(rect.left);
         let mouseY = touch.clientY - Math.round(rect.top);
 
-        if (pointInRect(new Point(mouseX, mouseY, null, null), rect)) {
-            mouseMove(mouseX, mouseY, options.selectItem.penColor, options.selectItem.penWidth);
+        if (pointInRect(new Point(mouseX, mouseY, null, null, null), rect)) {
+            mouseMove(mouseX, mouseY, options.selectItem.penColor, options.selectItem.penWidth, OO.Common.ENUM.PointType.Point);
         } 
         else {
             mouseLeave();
@@ -312,7 +330,7 @@ OO.Modules.PainterComponent.prototype._init = function (options, container) {
         let mouseX = touch.clientX - Math.round(rect.left);
         let mouseY = touch.clientY - Math.round(rect.top);
 
-        mouseUp(mouseX, mouseY, options.selectItem.penColor, options.selectItem.penWidth);
+        mouseUp(mouseX, mouseY, options.selectItem.penColor, options.selectItem.penWidth, OO.Common.ENUM.PointType.Point);
     });
 
     window.onresize = function(event) {
@@ -321,6 +339,8 @@ OO.Modules.PainterComponent.prototype._init = function (options, container) {
 
     	painterCanvas.style('width', containerWidth).style('height', containerHeight)
 			.attr('width', containerWidth).attr('height', containerHeight);
+
+        redraw();
 	};
 
     return {
